@@ -207,8 +207,8 @@ class DeepEmotionRecognizer(EmotionRecognizer):
 
         if self.classification:
             # one-hot encode when its classification
-            self.y_train = to_categorical([ self.emotions2int[str(e)] for e in self.y_train ])
-            self.y_test = to_categorical([ self.emotions2int[str(e)] for e in self.y_test ])
+            self.y_train = to_categorical([self.emotions2int[str(e)] for e in self.y_train])
+            self.y_test = to_categorical([self.emotions2int[str(e)] for e in self.y_test])
         
         # reshape labels
         y_train_shape = self.y_train.shape

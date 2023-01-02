@@ -90,7 +90,7 @@ class AudioExtractor:
                 self.categories = {'angry': 1, 'sad': 2, 'neutral': 3, 'ps': 4, 'happy': 5}
             else:
                 raise TypeError("Regression is only for either ['sad', 'neutral', 'happy'] or ['angry', 'sad', 'neutral', 'ps', 'happy']")
-            emotions = [ self.categories[e] for e in emotions ]
+            emotions = [self.categories[e] for e in emotions]
         # make features folder if does not exist
         if not os.path.isdir(self.features_folder_name):
             os.mkdir(self.features_folder_name)
