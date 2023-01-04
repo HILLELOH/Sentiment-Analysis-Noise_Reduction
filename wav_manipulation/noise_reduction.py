@@ -92,7 +92,6 @@ def update_noise(current_noise_path):
 
 
 def resize_noise(wav_path, duration_seconds):
-
     """
     input:
         wav_path: (string) to be cut
@@ -108,8 +107,13 @@ def resize_noise(wav_path, duration_seconds):
     wav_name_with_type = wav_path.split("\\")[-1]
     wav_name_without_type = wav_name_with_type.split(".")[0]
 
-    path_temp_noises = f'C:\\Users\\hille\\PycharmProjects\\Sentiment-Analysis-Noise_Reduction\\data\\training' \
-                       f'\\temp_noises'
+    # path_temp_noises = f'C:\\Users\\hille\\PycharmProjects\\Sentiment-Analysis-Noise_Reduction\\data\\training' \
+    #                    f'\\temp_noises'
+
+    path_temp_noises = f'.\\..\\data\\training\\temp_noises'
+    if not os.path.exists(path_temp_noises):
+        os.mkdir(path_temp_noises)
+
     path = os.path.join(path_temp_noises, f'{wav_name_without_type}_noised_{duration_seconds}.wav')
     soundfile.write(path, splited_filename, sr)  # Write the truncated audio signal to the temporary WAV file
     return path
@@ -184,30 +188,9 @@ def dir_noiser_holdout():
         counter_segment += 1
         counter_all += 1
 
-if __name__ == '__main__':
-    ################################
-    w_file = "C:\\Users\\hille\\PycharmProjects\\Sentiment-Analysis-Noise_Reduction\\data\\training\\Actor_02\\02_01_01_01_dogs-sitting_disgust.wav"
-    wav_dir = "C:\\Users\\hille\\PycharmProjects\\Sentiment-Analysis-Noise_Reduction\\data\\training\\try"
-    noise = "C:\\Users\\hille\\PycharmProjects\\Sentiment-Analysis-Noise_Reduction\\wav_manipulation\\noises\\heavy_rain_and_thunder.wav"
-    try_path = "C:\\Users\\hille\\PycharmProjects\\Sentiment-Analysis-Noise_Reduction\\data\\training\\Actor_02"
-    path_to_noise = "C:\\Users\\hille\\PycharmProjects\\Sentiment-Analysis-Noise_Reduction\\data\\training\\Actor_02_noised"
-    path_noises = "C:\\Users\\hille\\PycharmProjects\\Sentiment-Analysis-Noise_Reduction\\wav_manipulation\\noises"
 
-    # if get_duration(noise) != get_duration(w_file):
-    #     noise = resize_noise(noise, get_duration(w_file))
-    #     print("ok")
-    #
-    # path_noise = f'{path_to_noise}\\new_noise_less.wav'
-    #
-    # audio_arr, sr1 = librosa.load(w_file, sr=44100)  # get the array of numbers which represents the audio
-    # noise_arr, sr2 = librosa.load(noise, sr=44100)
-    # print("noisyyyyy")
-    # if sr1 != sr2:
-    #     noise_arr = librosa.resample(noise_arr, sr2, sr1)  # Resample y2 to the same sample rate as y1
-    # audio_arr, noise_arr = balance_sounds(audio_arr, noise_arr)
-    # noise_audio = [sum(x) for x in zip(audio_arr, noise_arr)]
-    #
-    # path_noise = f'{path_to_noise}\\new_noise.wav'
-    # soundfile.write(path_noise, noise_audio, sr1)
-    ################################
+if __name__ == '__main__':
+
+    wav_dir = f'.\\..\\data\\training\\Actor_01'  # you can replace the relative path to dir which have audio
+    path_noises = f'.\\noises'  # you can change the path to a dir which have noise
     dir_noiser_holdout()
