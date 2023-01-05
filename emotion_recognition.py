@@ -5,6 +5,7 @@ from create_csv import write_emodb_csv, write_tess_ravdess_csv, write_custom_csv
 from sklearn.metrics import accuracy_score, make_scorer, fbeta_score, mean_squared_error, mean_absolute_error
 from sklearn.metrics import confusion_matrix
 from sklearn.model_selection import GridSearchCV
+from sklearn.decomposition import PCA
 
 import matplotlib.pyplot as pl
 from time import time

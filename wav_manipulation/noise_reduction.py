@@ -1,5 +1,6 @@
 import os
 import wave
+from random import random, randint
 
 import librosa
 import soundfile
@@ -38,57 +39,27 @@ def count_dir(path_dir):
         # check if current path is a file
         if os.path.isfile(os.path.join(path_dir, path)):
             count += 1
+
     return count
 
 
-def size_seg(wav_file_dir, number):
+def get_next_noise(noises_path, current_idx):
     """
     input:
-        wav_file_dir: (string) represent the audio directory
-        number: (int) the number of the noises
+        current_noise: (string) path to noises
+        current_index:  (int) represent the current index in the folder
 
     output:
-        segment_size: (int) how many groups will be if we divide the number of files by the number of exist noises
-        flag: (boolean) represent if there will be a rest or not
+        cur_noise: (string) represent the next noise in the folder
+        cur_index: (int) return the new current_index
     """
-    global mod, side_ret
-    flag = False
-    if count_dir(wav_file_dir) % number == 0:
-        segment_size = int(count_dir(wav_file_dir) / number)
-    else:
-        segment_size = count_dir(wav_file_dir) / number
-        plus = segment_size - int(segment_size)  # add the modulo thar segment_size have
-        mod = int(count_dir(path_noises)*plus)
-        side_ret = int(mod/count_dir(path_noises))
-        segment_size = int(segment_size)
-        segment_size = segment_size + side_ret
-        flag = True
-    return segment_size, flag
 
+    cur_index = randint(0, count_dir(noises_path) - 1)
+    if cur_index == current_idx:
+        get_next_noise(noises_path, current_idx)
 
-def update_noise(current_noise_path):
-    """
-    input:
-        current_noise: (string) path to noise
-
-    output:
-        noise: (string) the next noise in the directory of noises
-    """
-    current_noise_file = current_noise_path.split("\\")[-1]
-    flag_current = False
-    list_noises = os.listdir(path_noises)
-
-    if current_noise_file == list_noises[-1]:
-        print(f'End of process: no more files!')
-        return
-
-    else:
-        for noise_file in list_noises:
-            if flag_current:
-                return noise_file
-
-            if current_noise_file == noise_file:
-                flag_current = True
+    cur_noise = os.listdir(noises_path)[cur_index]
+    return cur_noise, cur_index
 
 
 def resize_noise(wav_path, duration_seconds):
@@ -107,9 +78,6 @@ def resize_noise(wav_path, duration_seconds):
     wav_name_with_type = wav_path.split("\\")[-1]
     wav_name_without_type = wav_name_with_type.split(".")[0]
 
-    # path_temp_noises = f'C:\\Users\\hille\\PycharmProjects\\Sentiment-Analysis-Noise_Reduction\\data\\training' \
-    #                    f'\\temp_noises'
-
     path_temp_noises = f'.\\..\\data\\training\\temp_noises'
     if not os.path.exists(path_temp_noises):
         os.mkdir(path_temp_noises)
@@ -120,10 +88,17 @@ def resize_noise(wav_path, duration_seconds):
 
 
 def balance_sounds(wav_noise_arr):
-    return wav_noise_arr / 4
+    return wav_noise_arr / 8
 
 
-def dir_noiser_holdout():
+def return_true_by_probability(probability):
+    """
+    function which return true with probability as input to help decide if the current audio file will be noisy or not
+    """
+    return random() < probability
+
+
+def folder_audio_noiser(probability):
     """
     the function return a directory which contain the dataset but with the noise.
     the 'size_seg' return segment_size which represent the size of each group.
@@ -132,6 +107,11 @@ def dir_noiser_holdout():
     """
 
     global directory_path, noise, noise_arr_new, new_noise_path, new_directory_name, parent_directory, parent_directory, parent_directory
+
+    if probability > 1 or probability < 0:
+        print(f'ERROR: probability must be between 0 and 1 but the provided probability was {probability}')
+        return
+
     parent_directory = os.path.dirname(wav_dir)  # Get the parent directory of the given path
     parent_directory_name = f'{os.path.basename(wav_dir)}_noised'
 
@@ -142,32 +122,23 @@ def dir_noiser_holdout():
         # create the folder which will contain the noisy data
         os.mkdir(directory_path)
 
-    size_seg_ret, flag_plus = size_seg(wav_dir, count_dir(path_noises))  # find how many wav files will be selected fot each noise
-    print(f'{size_seg_ret}%%{flag_plus}')
-
-    counter_segment = 0  # until the size of as segment
     counter_all = 0
 
     noise_path = os.path.join(path_noises,
                               os.listdir(path_noises)[0])  # create the init path to noise(the first in the list)
     noise = os.listdir(path_noises)[0]
+    noise_index = 0
 
     for w_file in os.listdir(wav_dir):
         w_file_path = os.path.join(wav_dir, w_file)
-
-        if flag_plus:  # if there is one file that is odd from the segments - we skip it
-            flag_plus = False
+        if not return_true_by_probability(probability):
+            audio_arr, sr = librosa.load(w_file_path)
+            path_to_noisy_audio = f'{directory_path}\\{w_file}'
+            soundfile.write(path_to_noisy_audio, audio_arr, sr)
             continue
 
-        if counter_segment == int(size_seg_ret):  # get path for a new noise and init the counter
-            if counter_all == count_dir(wav_dir):
-                print(f'End of process: {count_dir(wav_dir)} audio files passed with noise!')
-            noise = update_noise(os.path.join(noise_path, noise))
-            if noise is None:
-                print("No more noises!")
-                return
-            noise_path = os.path.join(path_noises, noise)
-            counter_segment = 0
+        if counter_all == count_dir(wav_dir):
+            print(f'End of process: {count_dir(wav_dir)} audio files passed with noise!')
 
         if get_duration(w_file_path) < get_duration(noise_path):
             new_noise_path = resize_noise(noise_path, int(get_duration(w_file_path)))
@@ -184,13 +155,28 @@ def dir_noiser_holdout():
         noise_audio = [sum(x) for x in zip(audio_arr, noise_arr_new)]
         path_to_noisy_audio = f'{directory_path}\\noised_{w_file}'
         soundfile.write(path_to_noisy_audio, noise_audio, sr1)  # Save the mixed audio data as a new audio file
-        print(f'{counter_all}___{counter_segment} new file {path_to_noisy_audio} was added with {noise} noise')
-        counter_segment += 1
+        print(f'{counter_all}_new file {path_to_noisy_audio} was added with {noise} noise')
+        noise, noise_index = get_next_noise(path_noises, noise_index)
         counter_all += 1
 
 
-if __name__ == '__main__':
+def list_folder_noiser(folders, probability):
+    """
+    input:
+        folders: (list) contain the path to the folders to be noisy
+    output:
+        the function iterate the folders and make noise in them
+    """
+    global wav_dir
+    for folder_path in folders:
+        wav_dir = folder_path
+        folder_audio_noiser(probability)
+        print(f'{folder_path} was noised successfully!')
 
-    wav_dir = f'.\\..\\data\\training\\Actor_01'  # you can replace the relative path to dir which have audio
+
+if __name__ == '__main__':
+    # wav_dir = f'.\\..\\data\\training\\Actor_02'  # you can replace the relative path to dir which have audio
     path_noises = f'.\\noises'  # you can change the path to a dir which have noise
-    dir_noiser_holdout()
+    list_of_folders = [f'.\\..\\data\\training\\Actor_01', f'.\\..\\data\\training\\Actor_02',
+                       f'.\\..\\data\\training\\Actor_03']
+    list_folder_noiser(list_of_folders, probability=0.3)
