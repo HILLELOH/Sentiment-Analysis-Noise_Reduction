@@ -88,7 +88,7 @@ def resize_noise(wav_path, duration_seconds):
 
 
 def balance_sounds(wav_noise_arr):
-    return wav_noise_arr / 8
+    return wav_noise_arr / 4
 
 
 def return_true_by_probability(probability):
@@ -153,7 +153,12 @@ def folder_audio_noiser(probability):
         noise_arr_new = balance_sounds(noise_arr)
 
         noise_audio = [sum(x) for x in zip(audio_arr, noise_arr_new)]
-        path_to_noisy_audio = f'{directory_path}\\noised_{w_file}'
+        split_list = w_file.split("_")
+        split_list.insert(len(split_list)-1, "noise")
+
+        noisy_audio_name = "_".join(split_list)
+
+        path_to_noisy_audio = f'{directory_path}\\{noisy_audio_name}'
         soundfile.write(path_to_noisy_audio, noise_audio, sr1)  # Save the mixed audio data as a new audio file
         print(f'{counter_all}_new file {path_to_noisy_audio} was added with {noise} noise')
         noise, noise_index = get_next_noise(path_noises, noise_index)
@@ -175,8 +180,10 @@ def list_folder_noiser(folders, probability):
 
 
 if __name__ == '__main__':
-    # wav_dir = f'.\\..\\data\\training\\Actor_02'  # you can replace the relative path to dir which have audio
+    wav_dir = f'.\\..\\data\\training\\Actor_02'  # you can replace the relative path to dir which have audio
     path_noises = f'.\\noises'  # you can change the path to a dir which have noise
-    list_of_folders = [f'.\\..\\data\\training\\Actor_01', f'.\\..\\data\\training\\Actor_02',
-                       f'.\\..\\data\\training\\Actor_03']
-    list_folder_noiser(list_of_folders, probability=0.3)
+    folder_audio_noiser(0.2)
+    # list_of_folders = [f'.\\..\\data\\training\\Actor_04',
+    #                    f'.\\..\\data\\training\\Actor_16',
+    #                    f'.\\..\\data\\training\\Actor_07']
+    # list_folder_noiser(list_of_folders, probability=0.3)
