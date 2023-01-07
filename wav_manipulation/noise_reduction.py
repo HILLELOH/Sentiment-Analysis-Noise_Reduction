@@ -112,7 +112,7 @@ def folder_audio_noiser(probability):
     parent_directory = os.path.dirname(wav_dir)  # Get the parent directory of the given path
     parent_directory_name = f'{os.path.basename(wav_dir)}_noised'
 
-    #directory_path = os.path.join(parent_directory, parent_directory_name)  # Create the new directory by joining the parent directory with the new directory name
+    # directory_path = os.path.join(parent_directory, parent_directory_name)
 
     # if not os.path.exists(os.path.join(directory_path)):
     #     # create the folder which will contain the noisy data
@@ -152,7 +152,7 @@ def folder_audio_noiser(probability):
 
         noise_audio = [sum(x) for x in zip(audio_arr, noise_arr_new)]
         split_list = w_file.split("_")
-        split_list.insert(len(split_list)-1, "noise")
+        split_list.insert(len(split_list) - 1, "noise")
 
         noisy_audio_name = "_".join(split_list)
 
