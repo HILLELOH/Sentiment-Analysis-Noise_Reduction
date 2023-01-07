@@ -100,10 +100,7 @@ def return_true_by_probability(probability):
 
 def folder_audio_noiser(probability):
     """
-    the function return a directory which contain the dataset but with the noise.
-    the 'size_seg' return segment_size which represent the size of each group.
-    group is segment of the audio dir, all the group are equals.
-    each group will be colored with one of the noises that in the "noises" folder.
+    the function get a wav dir and by probability, copy the file, insert noise and write it in the audio dir
     """
 
     global directory_path, noise, noise_arr_new, new_noise_path, new_directory_name, parent_directory, parent_directory, parent_directory
@@ -170,6 +167,7 @@ def list_folder_noiser(folders, probability):
     """
     input:
         folders: (list) contain the path to the folders to be noisy
+        probability: (float) int the range [0,1]
     output:
         the function iterate the folders and make noise in them
     """
